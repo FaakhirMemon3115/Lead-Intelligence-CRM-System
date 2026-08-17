@@ -187,7 +187,9 @@ export const LeadsPage: React.FC<LeadsPageProps> = ({ initialStatusFilter = 'ALL
                       <div className="flex items-center gap-2">
                         <span>{lead.first_name} {lead.last_name}</span>
                         {lead.email_verified && (
-                          <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" title="Verified Email" />
+                          <span title="Verified Email">
+                            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                          </span>
                         )}
                       </div>
                       <p className="text-[11px] text-slate-400 font-mono mt-0.5">{lead.email}</p>
