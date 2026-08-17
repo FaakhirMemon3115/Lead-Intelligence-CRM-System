@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models import DuplicateGroup, Lead
-from ..schemas import MergeLeadsRequest, LeadResponse
+from ..schemas import MergeLeadsRequest, LeadResponse, DuplicateGroupResponse
 from ..engines.duplicate_engine import find_duplicate_pairs, merge_leads
 
 router = APIRouter(prefix="/api/duplicates", tags=["Duplicate Detection Engine"])
@@ -14,7 +14,7 @@ def scan_duplicates(db: Session = Depends(get_db)):
     return {"message": f"Scan completed. Found {len(groups)} potential duplicate pairs.", "groups_count": len(groups)}
 
 
-@router.get("", response_model=List[Dict[str, Any]])
+@router.get("", response_model=List[DuplicateGroupResponse])
 def get_duplicate_groups(db: Session = Depends(get_db)):
     # Auto-scan if none exist
     groups = db.query(DuplicateGroup).filter(DuplicateGroup.status == "PENDING").all()
@@ -26,16 +26,17 @@ def get_duplicate_groups(db: Session = Depends(get_db)):
         lead1 = db.query(Lead).filter(Lead.id == g.lead_id_1).first()
         lead2 = db.query(Lead).filter(Lead.id == g.lead_id_2).first()
         if lead1 and lead2:
-            result.append({
-                "id": g.id,
-                "lead_1": lead1,
-                "lead_2": lead2,
-                "match_reason": g.match_reason,
-                "similarity_score": g.similarity_score,
-                "status": g.status,
-                "created_at": g.created_at
-            })
+            result.append(DuplicateGroupResponse(
+                id=g.id,
+                lead_1=LeadResponse.model_validate(lead1),
+                lead_2=LeadResponse.model_validate(lead2),
+                match_reason=g.match_reason,
+                similarity_score=g.similarity_score,
+                status=g.status,
+                created_at=g.created_at
+            ))
     return result
+
 
 
 @router.post("/merge", response_model=LeadResponse)
