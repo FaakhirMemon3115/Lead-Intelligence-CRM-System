@@ -7,6 +7,13 @@ from ..models import Lead, Company, LeadActivity, ScoringRule
 from ..engines.scoring_engine import calculate_lead_score
 from ..engines.duplicate_engine import normalize_email
 
+def _safe_float(value: Any, default: float = 0.0) -> float:
+    try:
+        return float(value) if value not in (None, "", "N/A") else default
+    except (ValueError, TypeError):
+        return default
+
+
 def parse_and_validate_csv(file_content: bytes) -> Tuple[List[Dict[str, Any]], List[str]]:
     """
     Parses CSV content and validates required fields.
