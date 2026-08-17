@@ -47,7 +47,7 @@ def parse_and_validate_csv(file_content: bytes) -> Tuple[List[Dict[str, Any]], L
             "job_title": norm_row.get("job_title") or norm_row.get("title", "Manager"),
             "company_name": norm_row.get("company") or norm_row.get("company_name", "Enterprise Corp"),
             "source": norm_row.get("source", "CSV Import"),
-            "deal_value": float(norm_row.get("deal_value") or norm_row.get("value") or 15000.0)
+            "deal_value": _safe_float(norm_row.get("deal_value") or norm_row.get("value"), 15000.0)
         })
 
     return valid_rows, errors

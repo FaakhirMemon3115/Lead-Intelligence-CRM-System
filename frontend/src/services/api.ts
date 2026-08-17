@@ -2,7 +2,7 @@ import {
   Lead, ScoringRule, FilterRule, DuplicateGroup, PipelineStageBoard, AnalyticsSummary, Task, QueryNode
 } from '../types';
 
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = '/api';
 
 export const api = {
   // Auth
