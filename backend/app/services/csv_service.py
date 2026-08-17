@@ -70,20 +70,22 @@ def process_csv_import(valid_rows: List[Dict[str, Any]], db: Session) -> Dict[st
     duplicate_count = 0
     created_leads = []
 
-    # Get max code number
-    max_id = db.query(Lead).count()
+    # Get highest existing numeric code to avoid collisions on re-import
+    from sqlalchemy import func
+    last_lead = db.query(Lead).order_by(Lead.id.desc()).first()
+    next_code_num = (last_lead.id if last_lead else 0) + 10001
 
     for row in valid_rows:
         canon_email = normalize_email(row["email"])
         
-        # Check existing lead with same canonical email
-        existing = db.query(Lead).filter(Lead.email.ilike(row["email"])).first()
-        if existing:
+        # Deduplicate using canonical email for accuracy
+        all_emails = [normalize_email(e[0]) for e in db.query(Lead.email).all()]
+        if canon_email in all_emails:
             duplicate_count += 1
             continue
 
-        max_id += 1
-        lead_code = f"LD-{10000 + max_id}"
+        lead_code = f"LD-{next_code_num}"
+        next_code_num += 1
 
         # Resolve or create company
         company = None
