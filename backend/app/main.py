@@ -1,5 +1,7 @@
-from fastapi import FastAPI
+import traceback
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from .database import engine, Base
 from .seed_data import seed_database
 from .api import auth, leads, scoring, filters, duplicates, pipeline, imports, analytics, tasks
@@ -10,6 +12,18 @@ app = FastAPI(
     description="Engine-driven B2B Lead Intelligence, Dynamic Scoring Rules, AST Filter Engine, Duplicate Deduplication, and CRM Pipeline API.",
     version="1.0.0"
 )
+
+# Global exception handler — ensures all 500s return JSON with CORS headers
+# (Starlette's default ServerErrorMiddleware returns plain text which breaks the frontend)
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    tb = traceback.format_exc()
+    print(f"[ERROR] Unhandled exception on {request.method} {request.url}:\n{tb}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc), "type": type(exc).__name__},
+        headers={"Access-Control-Allow-Origin": "*"}
+    )
 
 # Configure CORS for React frontend
 app.add_middleware(
