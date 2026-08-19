@@ -26,7 +26,7 @@ class Company(Base):
     domain = Column(String(150), nullable=True)
     industry = Column(String(100), nullable=True, index=True)
     company_size = Column(String(50), nullable=True)
-    employee_count = Column(Integer, default=50)
+    employee_count = Column(Integer, default=5000)
     location = Column(String(100), nullable=True)
     website = Column(String(200), nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
